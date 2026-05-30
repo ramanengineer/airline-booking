@@ -1,65 +1,118 @@
-import Image from "next/image";
+'use client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+const AIRPORTS = [
+  { code: 'NZNE', label: 'Auckland – Dairy Flat (NZNE)' },
+  { code: 'YSSY', label: 'Sydney, Australia (YSSY)' },
+  { code: 'NZRO', label: 'Rotorua (NZRO)' },
+  { code: 'NZCI', label: 'Chatham Islands – Tuuta (NZCI)' },
+  { code: 'NZGB', label: 'Great Barrier Island – Claris (NZGB)' },
+  { code: 'NZTL', label: 'Lake Tekapo (NZTL)' },
+];
+
+const ROUTES = [
+  { from: 'NZNE', to: 'YSSY', label: 'Auckland → Sydney', freq: 'Weekly (Fri)', icon: '✈️' },
+  { from: 'NZNE', to: 'NZRO', label: 'Auckland → Rotorua', freq: 'Twice daily, weekdays', icon: '🏔️' },
+  { from: 'NZNE', to: 'NZGB', label: 'Auckland → Great Barrier', freq: '3× weekly', icon: '🏝️' },
+  { from: 'NZNE', to: 'NZCI', label: 'Auckland → Chatham Islands', freq: 'Twice weekly', icon: '🌊' },
+  { from: 'NZNE', to: 'NZTL', label: 'Auckland → Lake Tekapo', freq: 'Weekly (Mon)', icon: '🏔️' },
+];
 
 export default function Home() {
+  const router = useRouter();
+  const [from, setFrom] = useState('NZNE');
+  const [to, setTo] = useState('');
+  const [date, setDate] = useState('');
+  const today = new Date().toISOString().split('T')[0];
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
+    if (date) params.set('date', date);
+    router.push(`/search?${params}`);
+  }
+
+  function quickSearch(f: string, t: string) {
+    router.push(`/search?from=${f}&to=${t}`);
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <main>
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900" />
+        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, #3b82f6 0%, transparent 50%), radial-gradient(circle at 80% 50%, #f59e0b 0%, transparent 50%)' }} />
+        <div className="relative max-w-6xl mx-auto px-4 py-24 text-center">
+          <div className="inline-block bg-amber-400/10 border border-amber-400/30 rounded-full px-4 py-1 text-amber-400 text-sm mb-6">
+            Premium charter flights from Dairy Flat Airport
+          </div>
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-blue-100 to-amber-300 bg-clip-text text-transparent">
+            Fly in luxury.<br />Arrive in style.
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-slate-400 text-xl mb-12 max-w-2xl mx-auto">
+            Point-to-point private jet service across New Zealand and beyond. Up to 6 passengers, no crowds, no queues.
           </p>
+          <div className="bg-slate-900/80 backdrop-blur border border-slate-700 rounded-2xl p-6 max-w-3xl mx-auto shadow-2xl">
+            <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-3">
+              <select value={from} onChange={e => setFrom(e.target.value)}
+                className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-400 transition-colors">
+                <option value="">From…</option>
+                {AIRPORTS.map(a => <option key={a.code} value={a.code}>{a.label}</option>)}
+              </select>
+              <select value={to} onChange={e => setTo(e.target.value)}
+                className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-400 transition-colors">
+                <option value="">To…</option>
+                {AIRPORTS.filter(a => a.code !== from).map(a => <option key={a.code} value={a.code}>{a.label}</option>)}
+              </select>
+              <input type="date" value={date} min={today} onChange={e => setDate(e.target.value)}
+                className="bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-400 transition-colors" />
+              <button type="submit"
+                className="bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold px-8 py-3 rounded-xl transition-colors whitespace-nowrap">
+                Search →
+              </button>
+            </form>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+      <section className="max-w-6xl mx-auto px-4 py-16">
+        <h2 className="text-3xl font-bold text-center mb-2">Our Routes</h2>
+        <p className="text-slate-400 text-center mb-10">Click any route to see available flights</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {ROUTES.map(r => (
+            <button key={r.label} onClick={() => quickSearch(r.from, r.to)}
+              className="group bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-amber-400/50 rounded-xl p-5 text-left transition-all">
+              <div className="text-3xl mb-3">{r.icon}</div>
+              <div className="font-semibold text-white group-hover:text-amber-400 transition-colors">{r.label}</div>
+              <div className="text-slate-400 text-sm mt-1">{r.freq}</div>
+              <div className="mt-3 text-amber-400 text-sm opacity-0 group-hover:opacity-100 transition-opacity">View flights →</div>
+            </button>
+          ))}
         </div>
-      </main>
-    </div>
+      </section>
+      <section className="border-t border-slate-800 py-16">
+        <div className="max-w-6xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-10">Our Fleet</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { name: 'SyberJet SJ30i', seats: 6, desc: 'Our flagship prestige jet. Ultra-long range with luxurious cabin.', badge: 'Prestige' },
+              { name: 'Cirrus SF50', seats: 4, desc: 'Efficient single-engine jet perfect for short hops around NZ.', badge: 'Regional' },
+              { name: 'HondaJet Elite', seats: 5, desc: 'Over-the-engine nacelle design reduces cabin noise for a smoother ride.', badge: 'Island Hopper' },
+            ].map(a => (
+              <div key={a.name} className="bg-slate-900 border border-slate-700 rounded-xl p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-4xl">🛩️</span>
+                  <span className="bg-amber-400/10 text-amber-400 text-xs px-2 py-1 rounded-full border border-amber-400/30">{a.badge}</span>
+                </div>
+                <h3 className="font-bold text-lg mb-1">{a.name}</h3>
+                <p className="text-slate-400 text-sm mb-3">{a.desc}</p>
+                <div className="text-amber-400 font-semibold text-sm">Up to {a.seats} passengers</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }
